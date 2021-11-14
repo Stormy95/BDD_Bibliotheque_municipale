@@ -9,3 +9,4 @@ whitenoise==5.2.0
 asgiref==3.3.1
 pytz==2020.4
 sqlparse==0.4.1
+django-heroku==0.3.1
