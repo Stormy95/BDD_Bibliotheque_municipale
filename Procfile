@@ -1,1 +1,1 @@
-web: gunicorn Library_ECL.wsgi --log-file 
+web: gunicorn  Library_ECL.wsgi --log-file -
