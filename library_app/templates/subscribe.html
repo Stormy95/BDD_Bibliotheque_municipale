@@ -1,0 +1,17 @@
+{% extends "base_generic.html" %}
+
+
+{% block content %}
+    <h1>Page pour renouveler ou souscrire à un abonnement</h1>
+    <p>Vous souhaitez réserver souscrire à un abonnement d'un an</p>
+    <p>Le tarif étant donné votre statut est : {{price}}</p>
+    <div class="row">
+        <div class="col">
+            <form method="POST" action ="{% url 'library_app:subscribe'%}" enctype="multipart/form-data">
+
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">Régler ma cotisation</button>
+             </form>
+        </div>
+    </div>
+{% endblock %}

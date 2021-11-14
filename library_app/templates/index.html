@@ -1,0 +1,28 @@
+{% extends "base_generic.html" %}
+    
+{% block content %}
+
+<h1>Bibliothèque Fedebaud</h1>
+<p>Bienvenue sur la bibliothèque en ligne Fedebaud  développée par <em>Thibaud Miquel et Federico Anus</em>!</p>
+<h2>Quelques chiffres sur la bibliothèque...</h2>
+<p>Activité de la biliothèque:</p>
+<ul>
+  <li><strong>Nombre d'ouvrages:</strong> {{ num_instances }}</li>
+  <li><strong>Nombre d'utilisateurs:</strong> {{ num_user }}</li>
+  <li><strong>Nombre d'abonnements:</strong> {{ num_subscription }}</li>
+</ul>
+<p>Vous avez visité cette page {{ num_visits }} fois.</p>
+
+  <div class="row">
+    <div class="col">
+      <div class="card card-body">
+      <form method="get">
+              {{tableFilter.form}}
+            <button class="btn btn-outline-primary" type="submit">Rechercher</button>
+      </form>
+      </div>
+    </div>
+</div>
+  {% include 'my_list.html' %}
+
+{% endblock %}

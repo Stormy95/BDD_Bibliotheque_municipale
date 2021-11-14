@@ -1,0 +1,14 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h1>Page de réservation</h1>
+    <p>Vous souhaitez réserver {{ reference.name }} de {{ reference.author }}. Si vous cliquez sur Emprunter, vous vous engagez à le rendre dans les 30 prochains jours</p>
+    <div class="row">
+        <div class="col">
+            <form method="POST" action ="{% url 'library_app:booking' reference.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">Borrow the book</button>
+             </form>
+        </div>
+    </div>
+{% endblock %}
