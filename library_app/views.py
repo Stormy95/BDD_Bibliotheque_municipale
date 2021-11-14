@@ -8,10 +8,20 @@ from django.db.models import Q
 from django.contrib import messages
 from django.http import HttpResponse
 
+from django.db import connection
 from .models import OuvrageInstance,User, Subscription, Loan, Bad_borrower
 from django.contrib.auth.decorators import login_required
 from .filters import OuvrageFilter
 # Create your views here.
+
+
+def dictfetchall(cursor):
+    desc= cursor.description
+    return [
+        dict(zip([col[0] for col in desc], row))
+        for row in cursor.fetchall()
+        ]
+
 
 
 def index(request):
@@ -21,17 +31,25 @@ def index(request):
     num_visits = request.session.get('num_visits', 0)
     request.session['num_visits'] = num_visits + 1
 
+
     # Generate counts of some of the main objects
-    num_instances = OuvrageInstance.objects.all().count()
-    num_user = User.objects.all().count()
-    num_subscription = Subscription.objects.all().count()
+    cursor=connection.cursor()
+    cursor.execute('SELECT COUNT(*) FROM library_app_ouvrageInstance')
+    num_instances =cursor.fetchone()[0]
+    cursor.execute('SELECT COUNT(*) FROM library_app_user')
+    num_user = cursor.fetchone()[0]
+    cursor.execute('SELECT COUNT(*) FROM library_app_subscription')
+    num_subscription = cursor.fetchone()[0]
 
-    references = OuvrageInstance.objects.all().order_by('name')
 
-    tableFilter = OuvrageFilter(request.GET, queryset=references)
+    
+    cursor.execute('SELECT * FROM library_app_OuvrageInstance')
+    references = dictfetchall(cursor)
+
+    tableFilter = OuvrageFilter(request.GET, queryset= OuvrageInstance.objects.all().order_by('name'))
     references = tableFilter.qs
     not_available_references = references.filter(loan__returned=False).union(references.filter(borrowable=False))
-
+ 
     context = {
         'num_instances': num_instances,
         'num_user': num_user,
