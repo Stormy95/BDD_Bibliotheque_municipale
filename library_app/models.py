@@ -218,4 +218,3 @@ class Bad_borrower(models.Model):
 
         super().save(*args, **kwargs)  # Call the "real" save() method.
 
-# test

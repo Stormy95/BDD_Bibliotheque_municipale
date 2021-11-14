@@ -7,12 +7,13 @@ import datetime
 from django.db.models import Q
 from django.contrib import messages
 from django.http import HttpResponse
-
 from django.db import connection
+
 from .models import OuvrageInstance,User, Subscription, Loan, Bad_borrower
 from django.contrib.auth.decorators import login_required
 from .filters import OuvrageFilter
 # Create your views here.
+
 
 
 def dictfetchall(cursor):
@@ -23,7 +24,6 @@ def dictfetchall(cursor):
         ]
 
 
-
 def index(request):
     """View function for home page of site."""
 
@@ -31,22 +31,32 @@ def index(request):
     num_visits = request.session.get('num_visits', 0)
     request.session['num_visits'] = num_visits + 1
 
-
     # Generate counts of some of the main objects
     cursor=connection.cursor()
     cursor.execute('SELECT COUNT(*) FROM library_app_ouvrageInstance')
     num_instances =cursor.fetchone()[0]
+
     cursor.execute('SELECT COUNT(*) FROM library_app_user')
+
     num_user = cursor.fetchone()[0]
     cursor.execute('SELECT COUNT(*) FROM library_app_subscription')
     num_subscription = cursor.fetchone()[0]
-
-
     
-    cursor.execute('SELECT * FROM library_app_OuvrageInstance')
-    references = dictfetchall(cursor)
+    tableFilter = OuvrageFilter(request.GET, queryset= cursor.execute('SELECT *'+
+                                                        'FROM library_app_ouvrageinstance '+
+                                                        'ORDER BY library_app_ouvrageinstance.name ASC'))
 
-    tableFilter = OuvrageFilter(request.GET, queryset= OuvrageInstance.objects.all().order_by('name'))
+    cursor.execute('SELECT library_app_ouvrageinstance.id, '+ 
+                        'library_app_ouvrageinstance.author, '+ 
+                        'library_app_ouvrageinstance.name, '+
+                        'library_app_ouvrageinstance.description, '+ 
+                        'library_app_ouvrageinstance.publish_date, '+
+                        'library_app_ouvrageinstance.borrowable, '+
+                        'library_app_ouvrageinstance.ref_type '+
+                    'FROM library_app_ouvrageinstance '+
+                    'ORDER BY library_app_ouvrageinstance.name ASC')
+    
+    references = dictfetchall(cursor)
     references = tableFilter.qs
     not_available_references = references.filter(loan__returned=False).union(references.filter(borrowable=False))
  
@@ -59,7 +69,6 @@ def index(request):
         'not_available_references': not_available_references,
         'tableFilter': tableFilter,
     }
-
     # Render the HTML template index.html with the data in the context variable
     return render(request, 'index.html', context=context)
 
@@ -67,15 +76,29 @@ def index(request):
 def board(request):
 
     user = request.user
+    
+    cursor=connection.cursor()
+    
     subscription = None
     sub_state = None
+    
+    # sub=(cursor.execute("SELECT library_app_subscription.id, "+
+    #                                     "library_app_subscription.beginning_date, "+
+    #                                     "library_app_subscription.ending_date, "+
+    #                                     "library_app_subscription.user_id "+
+    #                                 "FROM library_app_subscription "+
+    #                                 "INNER JOIN library_app_user "+
+    #                                     "ON (library_app_subscription.user_id = library_app_user.id) "+
+    #                                 "WHERE library_app_user.email ='Federico@ecl.com'"))
+                            
     # get user subscription
+    # if Subscription.objects.filter(user__email=user.email).exists():
     if Subscription.objects.filter(user__email=user.email).exists():
         subscription = Subscription.objects.get(user__email=user.email)
         if subscription.ending_date>datetime.date.today():
             sub_state = 'valide'
         else :
-            sub_state = 'expiré'
+            sub_state = 'expiré' 
 
     # calculate subscription price
     price = 'Demi-tarif'
@@ -87,6 +110,30 @@ def board(request):
 
     # get user borrowings
     borrowings = Loan.objects.filter(user__email=user.email).order_by('beginning_date')
+
+    # borrowings=(cursor.execute("SELECT library_app_loan.id, "+
+    #   " library_app_loan.user_id, "+
+    #    "library_app_loan.reference_id, "+
+    #    "library_app_loan.beginning_date, "+
+    #    "library_app_loan.ending_date, "+
+    #    "library_app_loan.returned "+
+    # "FROM library_app_loan "+
+    # "INNER JOIN library_app_user "+
+    #     "ON (library_app_loan.user_id = library_app_user.id) "+
+    # "WHERE library_app_user.email ='Federico@ecl.com'"+
+    # "ORDER BY library_app_loan.beginning_date ASC"))
+
+    # not_returned_borrowings=(cursor.execute("SELECT library_app_loan.id, "+
+    #   " library_app_loan.user_id, "+
+    #    "library_app_loan.reference_id, "+
+    #    "library_app_loan.beginning_date, "+
+    #    "library_app_loan.ending_date, "+
+    #    "library_app_loan.returned "+
+    #     "FROM library_app_loan "+
+    #     "INNER JOIN library_app_user "+
+    #         "ON (library_app_loan.user_id = library_app_user.id) "+
+    #     "WHERE (library_app_user.email ='Federico@ecl.com' AND NOT library_app_loan.returned)"))
+
     not_returned_borrowings = Loan.objects.filter(user__email=user.email).filter(returned=False)
 
     if request.method == 'POST':
@@ -116,10 +163,17 @@ def booking(request, reference_id):
 
     # get user object
     user = request.user
-
-
+    #cursor=connection.cursor()
+    # cursor.execute("SELECT library_app_user.email "+
+    #                 "FROM library_app_subscription "+
+    #                "INNER JOIN library_app_user "+
+    #                     "ON (library_app_subscription.user_id = library_app_user.id) "+
+    #                 "WHERE library_app_subscription.ending_date >= DATE(NOW())")
+    #valid_subscriptions_users = dictfetchall(cursor)
     today = datetime.date.today()
     valid_subscriptions_users = Subscription.objects.filter(ending_date__gte=today).values_list('user__email',flat=True)
+    
+    
     # check if the user has a subscription
     if user.email not in valid_subscriptions_users:
         return HttpResponseRedirect(reverse('library_app:no_subscription'))
@@ -188,6 +242,11 @@ def subscribe(request):
     # get user object
     user = request.user
 
+    # cursor=connection.cursor()
+    # cursor.execute("SELECT library_app_user.email "+
+    #    " FROM library_app_bad_borrower "+
+    #     "INNER JOIN library_app_user "+
+    #         "ON (library_app_bad_borrower.user_id = library_app_user.id)")
 
     # check if the user is not a bad borrower
     if user.email in Bad_borrower.objects.all().values_list('user__email',flat=True):

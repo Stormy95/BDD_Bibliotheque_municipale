@@ -14,6 +14,14 @@ from django.urls import reverse
 import datetime
 from .models import OuvrageInstance,User, Subscription, Bad_borrower, Loan, MyUserManager
 
+def dictfetchall(cursor):
+    desc= cursor.description
+    return [
+        dict(zip([col[0] for col in desc], row))
+        for row in cursor.fetchall()
+        ]
+
+
 class OuvrageCreationForm(forms.ModelForm):
     """A form for creating new references."""
     pass
@@ -22,6 +30,18 @@ class ReferenceAdmin(admin.ModelAdmin):
     form = OuvrageCreationForm
     list_display = ('name',  'author', 'publish_date', 'ref_type','available_link')
     list_filter = ('name',  'author', 'publish_date', 'ref_type')
+
+    #cursor=connection.cursor()
+    #borrowed=dictfetchall(cursor.execute("SELECT library_app_loan.id, "+
+    #   " library_app_loan.user_id, "+
+    #    "library_app_loan.reference_id, "+
+    #    "library_app_loan.beginning_date, "+
+    #    "library_app_loan.ending_date, "+
+    #    "library_app_loan.returned "+
+    # "FROM library_app_loan "+
+    # "INNER JOIN library_app_ouvrageinstance "+
+    #     "ON (library_app_loan.user_id = library_app_ouvrageinstance.id) "+
+    # "WHERE NOT library_app_loan.returned"))
 
     def available_link(self, ref):
         borrowed = Loan.objects.filter(Q(reference=ref) & Q(returned=False)).exists()
@@ -47,6 +67,11 @@ class SubscriptionCreationForm(forms.ModelForm):
         cleaned_data = super().clean()
 
         user = cleaned_data.get("user")
+        
+    # cursor=connection.cursor()
+    # bad_borrowers=dictfetchall(cursor.execute("SELECT library_app_bad_borrower.email "+
+    #    " FROM library_app_bad_borrower "+
+    #     "WHERE library_app_bad_borrower.ending_date=DATE(NOW())"))
 
         # only users that aren't bad borrowers can have a subscription
         bad_borrowers = Bad_borrower.objects.filter(ending_date__gte=datetime.date.today()).values_list('user__email',flat=True)
@@ -121,8 +146,21 @@ class LoanCreationForm(forms.ModelForm):
         #exclude = ('returned',)
 
     # only available reference
+    # cursor=connection.cursor()
+    # cursor.execute('SELECT library_app_ouvrageinstance.id, '+ 
+    #                     'library_app_ouvrageinstance.author, '+ 
+    #                     'library_app_ouvrageinstance.name, '+
+    #                     'library_app_ouvrageinstance.description, '+ 
+    #                     'library_app_ouvrageinstance.publish_date, '+
+    #                     'library_app_ouvrageinstance.borrowable, '+
+    #                     'library_app_ouvrageinstance.ref_type '+
+    #                 'FROM library_app_ouvrageinstance '+
+    #                 'WHERE library_app_ouvrageinstance.borrowable')
+    # available_ref = dictfetchall(cursor)
+
+
+
     available_ref = OuvrageInstance.objects.filter(Q(borrowable=True)).distinct()
-    
     reference = forms.ModelChoiceField(queryset=available_ref,required=True)
 
     ###### we don't use it here to allow user to test our data ######
@@ -148,6 +186,12 @@ class LoanCreationForm(forms.ModelForm):
         reference = cleaned_data.get("reference")
         beginning_date = cleaned_data.get("beginning_date")
         ending_date = cleaned_data.get("ending_date")
+
+        #cursor=connection.cursor()
+        # cursor.execute("SELECT library_app_user.email "+
+        #                 "FROM library_app_subscription "+
+        #                 "WHERE library_app_subscription.ending_date >= DATE(NOW())")
+        #valid_subscriptions_users = dictfetchall(cursor)
 
         # check if the user has a subscription
         today = datetime.date.today()
