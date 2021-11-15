@@ -6,7 +6,8 @@
  - Selectionner "new repository"
    - Entrer un nom de repository
    - Entrer une description
-   - Cliquer sur "Create reposiroy"
+   - Cliquer sur "Create repository"
+   - Ne créez pas de read.me, .gitignore, LICENCE vous utiliserez directement ceux de ce fichier 
  - Cliquer sur le bouton vert "code" et copier le lien qui apparait (ex: https://github.com/<your_git_user_id>/<your_repo_name>.git
  - Installer git sur votre ordinateur : https://git-scm.com/downloads
  - Ouvrir le terminal de commande de votre ordinateur et cloner votre repository: **git clone https://github.com/<your_git_user_id>/<your_repo_name>.git**
