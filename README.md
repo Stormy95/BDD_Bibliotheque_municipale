@@ -26,12 +26,6 @@
  - Entrer votre mot de passe et cliquer SET PASSWORD AND LOGIN 
  - Vous serez connecté et amené sur la page suivante: https://dashboard.heroku.com/apps
 
-Go to www.heroku.com and click the SIGN UP FOR FREE button.
-Enter your details and then press CREATE FREE ACCOUNT. You'll be asked to check your account for a sign-up email.
-Click the account activation link in the signup email. You'll be taken back to your account on the web browser.
-Enter your password and click SET PASSWORD AND LOGIN.
-You'll then be logged in and taken to the Heroku dashboard: https://dashboard.heroku.com/apps.
-
 ## 3/ Installation du client
 
  - Télécharger et installer le client Heroku en suivant les instructions ici: https://devcenter.heroku.com/articles/getting-started-with-python#set-up
