@@ -7,7 +7,7 @@
         <div class="col">
             <form method="POST" action ="{% url 'library_app:booking' reference.id %}" enctype="multipart/form-data">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-success">Borrow the book</button>
+                <button type="submit" class="btn btn-success">Emprunter le livre</button>
              </form>
         </div>
     </div>
