@@ -1,6 +1,6 @@
 # Bilbiothèque en ligne Guide d'installation
 
-# Ce readme sert aux déploiement en ligne de l'application à partir de votre machine. 
+# Ce readme sert au déploiement en ligne de l'application à partir de votre machine. 
 
 L'application étant déjà en ligne vous n'avez pas besoin de réaliser tout cela vous pouvez directement vous connecter sur la bibliotheque avec le lien et les mots de passe par défaut suivant :
  - lien: https://stormy-gorge-70262.herokuapp.com/library_app/
